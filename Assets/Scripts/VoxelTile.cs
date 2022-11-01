@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class VoxelTile : MonoBehaviour
@@ -8,7 +6,6 @@ public class VoxelTile : MonoBehaviour
     public float voxelSize = 0.1f;
     public int tileSideVoxels = 8;
     [Range(0, 100)] public int weight = 50;
-
     public RotationType Rotation;
 
     public enum RotationType

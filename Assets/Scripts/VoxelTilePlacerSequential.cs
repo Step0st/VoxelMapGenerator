@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using UnityEngine;
 using Random = UnityEngine.Random;
 using System.Linq;
@@ -12,59 +11,20 @@ public class VoxelTilePlacerSequential : MonoBehaviour
     public Vector2Int MapSize = new Vector2Int(10, 10);
     
 
-    private VoxelTile[,] spawnedTiles;
+    private VoxelTile[,] _spawnedTiles;
+    private VoxelTileRotator _voxelTileRotator;
 
     private void Start()
     {
-        spawnedTiles = new VoxelTile[MapSize.x, MapSize.y];
+        _spawnedTiles = new VoxelTile[MapSize.x, MapSize.y];
 
         foreach (VoxelTile tilePrefab in TilePrefabs)
         {
             tilePrefab.CalculateSideColors();
         }
 
-        int countBeforeAdding = TilePrefabs.Count;
-        for (int i = 0; i < countBeforeAdding; i++)
-        {
-            VoxelTile clone;
-            switch (TilePrefabs[i].Rotation)
-            {
-                case VoxelTile.RotationType.SingleRotation:
-                    break;
-                
-                case VoxelTile.RotationType.TwoRotations:
-                    TilePrefabs[i].weight /= 2;
-                    if (TilePrefabs[i].weight <= 0) TilePrefabs[i].weight = 1;
-                    
-                    clone = Instantiate(TilePrefabs[i], TilePrefabs[i].transform.position + Vector3.forward, Quaternion.identity);
-                    clone.Rotate90();
-                    TilePrefabs.Add(clone);
-                    break;
-                
-                case VoxelTile.RotationType.FourRotations:
-                    TilePrefabs[i].weight /= 4;
-                    if (TilePrefabs[i].weight <= 0) TilePrefabs[i].weight = 1;
-                    
-                    clone = Instantiate(TilePrefabs[i], TilePrefabs[i].transform.position + Vector3.forward, Quaternion.identity);
-                    clone.Rotate90();
-                    TilePrefabs.Add(clone);
-                    
-                    clone = Instantiate(TilePrefabs[i], TilePrefabs[i].transform.position + Vector3.forward*2, Quaternion.identity);
-                    clone.Rotate90();
-                    clone.Rotate90();
-                    TilePrefabs.Add(clone);
-                    
-                    clone = Instantiate(TilePrefabs[i], TilePrefabs[i].transform.position + Vector3.forward*3, Quaternion.identity);
-                    clone.Rotate90();
-                    clone.Rotate90();
-                    clone.Rotate90();
-                    TilePrefabs.Add(clone);
-                    break;
-                
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
+        _voxelTileRotator = GetComponent<VoxelTileRotator>();
+        TilePrefabs = _voxelTileRotator.MakeRotatedTiles(TilePrefabs);
         
         StartCoroutine(Generate());
     }
@@ -75,7 +35,7 @@ public class VoxelTilePlacerSequential : MonoBehaviour
         {
             StopAllCoroutines();
 
-            foreach (VoxelTile spawnedTile in spawnedTiles)
+            foreach (VoxelTile spawnedTile in _spawnedTiles)
             {
                 if (spawnedTile != null) Destroy(spawnedTile.gameObject);
             }
@@ -102,10 +62,10 @@ public class VoxelTilePlacerSequential : MonoBehaviour
 
         foreach (VoxelTile tilePrefab in TilePrefabs)
         {
-            if (CanAppendTile(spawnedTiles[x-1,y], tilePrefab, Direction.Left) &&
-                CanAppendTile(spawnedTiles[x+1,y], tilePrefab, Direction.Right) &&
-                CanAppendTile(spawnedTiles[x,y-1], tilePrefab, Direction.Back) &&
-                CanAppendTile(spawnedTiles[x,y+1], tilePrefab, Direction.Forward))
+            if (VoxelTileMatcher.Instance.CanAppendTile(_spawnedTiles[x-1,y], tilePrefab, Direction.Left) &&
+                VoxelTileMatcher.Instance.CanAppendTile(_spawnedTiles[x+1,y], tilePrefab, Direction.Right) &&
+                VoxelTileMatcher.Instance.CanAppendTile(_spawnedTiles[x,y-1], tilePrefab, Direction.Back) &&
+                VoxelTileMatcher.Instance.CanAppendTile(_spawnedTiles[x,y+1], tilePrefab, Direction.Forward))
             {
                 availableTiles.Add(tilePrefab);
             }
@@ -113,58 +73,8 @@ public class VoxelTilePlacerSequential : MonoBehaviour
 
         if (availableTiles.Count == 0) return;
 
-        VoxelTile selectedTile = GetRandomTile(availableTiles);
+        VoxelTile selectedTile = VoxelTileRandomizer.Instance.GetRandomTile(availableTiles);
         Vector3 position = new Vector3(x, 0, y) * selectedTile.voxelSize * selectedTile.tileSideVoxels;
-        spawnedTiles[x, y] = Instantiate(selectedTile, position, selectedTile.transform.rotation);
-    }
-
-    private VoxelTile GetRandomTile(List<VoxelTile> availableTiles)
-    {
-        List<float> chances = new List<float>();
-        for (int i = 0; i < availableTiles.Count; i++)
-        {
-            chances.Add(availableTiles[i].weight);
-        }
-
-        float value = Random.Range(0, chances.Sum());
-        float sum = 0;
-
-        for (int i = 0; i < chances.Count; i++)
-        {
-            sum += chances[i];
-            if (value<sum)
-            {
-                return availableTiles[i];
-            }
-        }
-        return availableTiles[availableTiles.Count - 1];
-    }
-    
-    
-    private bool CanAppendTile(VoxelTile existingTile, VoxelTile tileToAppend, Direction direction)
-    {
-        if (existingTile == null) return true;
-
-        if (direction == Direction.Right)
-        {
-            return Enumerable.SequenceEqual(existingTile.ColorsRight, tileToAppend.ColorsLeft);
-        }
-        else if (direction == Direction.Left)
-        {
-            return Enumerable.SequenceEqual(existingTile.ColorsLeft, tileToAppend.ColorsRight);
-        }
-        else if (direction == Direction.Forward)
-        {
-            return Enumerable.SequenceEqual(existingTile.ColorsForward, tileToAppend.ColorsBack);
-        }
-        else if (direction == Direction.Back)
-        {
-            return Enumerable.SequenceEqual(existingTile.ColorsBack, tileToAppend.ColorsForward);
-        }
-        else
-        {
-            throw new ArgumentException(
-                "Wrong Direction value, should be Vector3.left/right/back/forward", nameof(direction));
-        }
+        _spawnedTiles[x, y] = Instantiate(selectedTile, position, selectedTile.transform.rotation);
     }
 }

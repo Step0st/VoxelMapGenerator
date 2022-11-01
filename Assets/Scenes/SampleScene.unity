@@ -740,6 +740,7 @@ GameObject:
   m_Component:
   - component: {fileID: 841615143}
   - component: {fileID: 841615142}
+  - component: {fileID: 841615144}
   m_Layer: 0
   m_Name: WFCgenerator
   m_TagString: Untagged
@@ -786,6 +787,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &841615144
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 841615141}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d3489d939e0e79046ab0b9570bb877bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
@@ -1192,6 +1205,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1965891509}
   - component: {fileID: 1965891508}
+  - component: {fileID: 1965891510}
   m_Layer: 0
   m_Name: SequentialGenerator
   m_TagString: Untagged
@@ -1238,6 +1252,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1965891510
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1965891507}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d3489d939e0e79046ab0b9570bb877bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &1971623920
 PrefabInstance:
   m_ObjectHideFlags: 0
