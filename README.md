@@ -1,5 +1,7 @@
 # VoxelMapGenerator
 Voxel tile map builder
 
-Scripts for world generation from voxel tiles.
-Two separate generators are presented. One based on sequential addition. 
+Scripts for world generation from voxel tiles.<br/>
+Two separate generators are presented: <br/> 
+**-** Based on sequential addition.
+**-** Using Wave Function Collapse.
